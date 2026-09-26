@@ -1,18 +1,3 @@
-<pre>
- ######:  ##      ## ###   ##   :####:   ###   ##   .####.    .####.   ######:  
- #######: ##.    .## ###   ##  :######   ###   ##   ######    ######   #######: 
- ##   :## ##:    :## ###:  ##  ##:  :#   ###:  ##  :##  ##:  :##  ##:  ##   :## 
- ##    ##  #: ## :#  ####  ##  ##        ####  ##  ##:  :##  ##:  :##  ##    ## 
- ##   :## :# .## ##: ##:#: ##  ###:      ##:#: ##  ##    ##  ##    ##  ##   :## 
- #######: :##.##.##: ## ## ##  :#####:   ## ## ##  ##    ##  ##    ##  #######: 
- ######:  .##:##:##. ## ## ##   .#####:  ## ## ##  ##    ##  ##    ##  ######:  
- ##        ##    ##. ## :#:##      :###  ## :#:##  ##    ##  ##    ##  ##       
- ##        ###::###  ##  ####        ##  ##  ####  ##:  :##  ##:  :##  ##       
- ##        ###..###  ##  :###  #:.  :##  ##  :###  :##  ##:  :##  ##:  ##       
- ##        ###  ###  ##   ###  #######:  ##   ###   ######    ######   ##       
- ##         ##  ###  ##   ###  .#####:   ##   ###   .####.    .####.   ##  '''     
-</pre>
-
-A simple, lightweight, open-source Chrome browser extension that uses XposedOrNot's free community API to check for sensitive passwords, emails, phone numbers, and addresses. 
+A simple, lightweight, open-source Chrome browser extension that checks for sensitive passwords, emails, phone numbers, and addresses. 
 
 Created for ShellHacks 2026
