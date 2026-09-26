@@ -132,11 +132,13 @@
     dialog.append(title, description, details, status, actions);
     root.append(style, dialog);
     Object.assign(current, { host, dialog, title, description, details, status, actions });
-    dialog.addEventListener('cancel', event => {
-      event.preventDefault();
-      closeSession(current);
-    });
-    action(current, 'Back to edit', () => closeSession(current));
+    dialog.addEventListener('cancel', function (event) {
+            event.preventDefault();
+            closeSession(current);
+        });
+    action(current, 'Back to edit', function () {
+            return closeSession(current);
+        });
     document.documentElement.append(host);
     dialog.showModal();
   }
@@ -148,7 +150,9 @@
     current.details.replaceChildren();
     current.status.textContent = '';
     current.actions.replaceChildren();
-    action(current, 'Back to edit', () => closeSession(current)).focus();
+    action(current, 'Back to edit', function () {
+            return closeSession(current);
+        }).focus();
   }
 
   async function scanText(text) {
@@ -156,8 +160,10 @@
     try {
       const response = await Promise.race([
         chrome.runtime.sendMessage({ type: 'SCAN_PROMPT', text }),
-        new Promise((_, reject) => {
-          timer = setTimeout(() => reject(new Error('Scanner timed out.')), SCAN_TIMEOUT_MS);
+        new Promise(function (_, reject) {
+            timer = setTimeout(function () {
+                return reject(new Error('Scanner timed out.'));
+            }, SCAN_TIMEOUT_MS);
         })
       ]);
       if (response?.ok !== true) throw new Error('Scanner unavailable.');
@@ -233,18 +239,22 @@
     current.details.append(list, label, preview);
     current.status.textContent = 'Copy this version, then paste it into the prompt box. It will be checked again when you send.';
     current.actions.replaceChildren();
-    action(current, 'Back to edit', () => closeSession(current));
-    action(current, 'Copy sanitized', async () => {
-      try {
-        await navigator.clipboard.writeText(result.sanitizedText);
-        if (session === current) current.status.textContent = 'Copied. Choose Back to edit, select your original draft, and paste.';
-      } catch {
-        preview.focus();
-        preview.select();
-        current.status.textContent = 'Automatic copy was unavailable. Copy the selected text manually.';
-      }
-    });
-    action(current, 'Send original anyway', () => sendReviewed(current));
+    action(current, 'Back to edit', function () {
+            return closeSession(current);
+        });
+    action(current, 'Copy sanitized', async function () {
+            try {
+                await navigator.clipboard.writeText(result.sanitizedText);
+                if (session === current) current.status.textContent = 'Copied. Choose Back to edit, select your original draft, and paste.';
+            } catch {
+                preview.focus();
+                preview.select();
+                current.status.textContent = 'Automatic copy was unavailable. Copy the selected text manually.';
+            }
+        });
+    action(current, 'Send original anyway', function () {
+            return sendReviewed(current);
+        });
     current.actions.querySelector('button').focus();
   }
 
@@ -282,23 +292,23 @@
 
   // Delegated listeners survive editor replacement and single-page navigation.
   // Window capture runs before document and element listeners registered later.
-  window.addEventListener('keydown', event => {
-    if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
-    const editor = getEditor();
-    if (editor && event.target instanceof Node && editor.contains(event.target)) {
-      intercept(event, editor);
-    }
-  }, true);
+  window.addEventListener('keydown', function (event) {
+          if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+          const editor = getEditor();
+          if (editor && event.target instanceof Node && editor.contains(event.target)) {
+              intercept(event, editor);
+          }
+      }, true);
 
-  window.addEventListener('click', event => {
-    if (!(event.target instanceof Element)) return;
-    const button = event.target.closest(SEND_SELECTOR);
-    const editor = getEditor();
-    if (editor && button && button === getSendButton(editor)) intercept(event, editor);
-  }, true);
+  window.addEventListener('click', function (event) {
+          if (!(event.target instanceof Element)) return;
+          const button = event.target.closest(SEND_SELECTOR);
+          const editor = getEditor();
+          if (editor && button && button === getSendButton(editor)) intercept(event, editor);
+      }, true);
 
-  window.addEventListener('submit', event => {
-    const editor = getEditor();
-    if (editor && event.target === editor.closest('form')) intercept(event, editor);
-  }, true);
+  window.addEventListener('submit', function (event) {
+          const editor = getEditor();
+          if (editor && event.target === editor.closest('form')) intercept(event, editor);
+      }, true);
 })();
