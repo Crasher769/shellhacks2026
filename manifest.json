@@ -12,15 +12,21 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "host_permissions": [
+        "http://127.0.0.1/*"
+    ],
     "content_scripts": [
         {
             "matches": [
-                "<all_urls>"
+                "https://chatgpt.com/*"
             ],
             "js": [
                 "scanner.js"
             ],
-            "run_at": "document_idle"
+            "run_at": "document_start"
         }
     ]
 }
