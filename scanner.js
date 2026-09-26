@@ -8,20 +8,22 @@ const SENSITIVE_PATTERNS = [
     /\b\d{10,}\b/             // long numbers
 ];
 
-function scanText(text) {
-    return SENSITIVE_PATTERNS.some((pattern) => pattern.test(text));
+async function scanText(text) {
+    const response = await chrome.runtime.sendMessage({
+        type: "SCAN_PROMPT",
+        text
+    });
+
+    if (!response?.ok) {
+        throw new Error(response?.error || "Scanner unavailable");
+    }
+
+    return response.result;
 }
 
 function attachToTextarea(textarea) {
     if (!textarea.dataset.privacyScannerBound) {
         textarea.dataset.privacyScannerBound = "true";
-
-        textarea.addEventListener("input", () => {
-            const value = textarea.value || "";
-            if (scanText(value)) {
-                console.warn("Sensitive content detected in textarea:", value);
-            }
-        });
 
         const form = textarea.closest("form");
         if (form) {
