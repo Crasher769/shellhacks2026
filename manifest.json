@@ -3,11 +3,8 @@
     "name": "Privacy Scanner",
     "version": "0.1.0",
     "description": "Checks prompts for personal information.",
-    "permissions": [
-        "storage"
-    ],
     "host_permissions": [
-        "<all_urls>"
+        "http://127.0.0.1/*"
     ],
     "action": {
         "default_popup": "popup.html"
@@ -15,9 +12,6 @@
     "background": {
         "service_worker": "background.js"
     },
-    "host_permissions": [
-        "http://127.0.0.1/*"
-    ],
     "content_scripts": [
         {
             "matches": [

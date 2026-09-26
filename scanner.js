@@ -1,3 +1,20 @@
+/*
+ * Privacy Scanner — content script for a Manifest V3 Chrome extension.
+ * Load at document_start on https://chatgpt.com/* in the isolated world. *
+ * Requires background.js to receive { type: "SCAN_PROMPT", text }, POST
+ * { text } to your local Python /scan endpoint, and reply with:
+ *   { ok: true, result: { sensitive: boolean, findings: [...], sanitizedText: string } }
+ * or { ok: false } on failure.
+ *
+ * Findings: { type: "email", start: 12, end: 28 }. Offsets MUST count Unicode
+ * code points (Python string indices), zero-based, end exclusive. We use
+ * Array.from(text) below so emoji do not shift the displayed findings.
+ *
+ * No prompt logging, persistent storage, or third-party API calls here.
+ * Text drafts only: attachments, voice, image text, and other send paths are
+ * not covered. DOM selectors below are integration assumptions: test them
+ * against your ChatGPT page. This is not a network-level privacy boundary.
+ */
 (() => {
   "use strict";
 
@@ -5,7 +22,13 @@
   if (globalThis.__privacyScannerInstalled) return;
   globalThis.__privacyScannerInstalled = true;
 
-  const EDITOR_SELECTOR = '#prompt-textarea';
+  // Current ChatGPT can use a ProseMirror <div> without an ID.
+  // Match its structural attributes, without relying on a localized aria-label.
+  const EDITOR_SELECTOR = [
+    '.ProseMirror[contenteditable="true"][role="textbox"][data-composer-markdown]',
+    '#prompt-textarea[contenteditable="true"]',
+    'textarea#prompt-textarea'
+  ].join(',');
   const SEND_SELECTOR = [
     'button[data-testid="send-button"]',
     'button[aria-label="Send prompt"]',
@@ -18,13 +41,16 @@
   let replay = null;
 
   function getEditor() {
-    const element = document.querySelector(EDITOR_SELECTOR);
-    if (!element || !element.getClientRects().length) return null;
-    return element instanceof HTMLTextAreaElement || element.isContentEditable
-      ? element : null;
+    // Skip hidden copies of the composer, such as a previous page's editor.
+    return [...document.querySelectorAll(EDITOR_SELECTOR)].find(element =>
+      element.getClientRects().length > 0 &&
+      (element instanceof HTMLTextAreaElement || element.isContentEditable)
+    ) || null;
   }
 
   function getText(editor) {
+    // A contenteditable div has no .value. innerText includes its paragraphs
+    // and line breaks. data-placeholder is an attribute, not prompt text.
     return editor instanceof HTMLTextAreaElement
       ? editor.value : editor.innerText;
   }
@@ -32,7 +58,9 @@
   function getSendButton(editor) {
     const scope = editor.closest('form') || document;
     return [...scope.querySelectorAll(SEND_SELECTOR)]
-      .find(button => button.getClientRects().length) || null;
+      .find(function (button) {
+              return button.getClientRects().length;
+          }) || null;
   }
 
   function isCurrent(snapshot) {
