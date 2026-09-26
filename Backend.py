@@ -1,50 +1,53 @@
 import re
-import json
+from flask import Flask, jsonify
 
-while True:
+app=Flask(__name__)
+app.run(host="127.0.0.1", port=8000)
 
-    doc = input("Paste doc: ").upper()
-    print(doc)
-    words = doc.split()
-    address_pos = 0
-    email = []
-    streets = []
-    username = []
-    phone = []
+data = "CONGRATULATIONS!!! YOU HAVE BEEN SELECTED FOR A LIMITED BONUS!!! CLICK NOW!!! >>> FREE OFFER <<< LOREM IPSUM DOLOR SIT AMET 847291 CLICK HERE NOW $$$ WINNER WINNER !!! ACT FAST !!! TERMS AND CONDITIONS MAY APPLY BLAH BLAH BLAH RANDOM NOTICE 8392014 SAVE SAVE SAVE !!! SPECIAL PROMOTION !!! THANK YOU FOR REGISTERING!!! @ALEXSMITH OFFER EXPIRES SOON!!! QWERTY LOREM IPSUM 771829 HELLO HELLO HELLO !!! SYSTEM NOTICE !!! CONGRATULATIONS CUSTOMER!!! PLEASE VERIFY YOUR INFORMATION!!! ABCDEFG 9283749823 !!! FREE GIFT !!! @JORDANLEE >>>>>> SPAM SPAM SPAM SPAM <<<<<< RANDOM MESSAGE 1827364 !!! IMPORTANT ACCOUNT UPDATE !!! THANK YOU THANK YOU THANK YOU!!! LOREM LOREM LOREM!!! ALEX01@EXAMPLE.COM V7Q!M2Z#91LP 202-555-0101 100-01-0001 192.0.2.1 101 EXAMPLE STREET, EXAMPLE CITY, FL 00001 25.761681,-80.191788 !!! CLICK HERE !!! LIMITED TIME !!! 928374982374982374 !!! @MIKE2026 CONGRATULATIONS CONGRATULATIONS CONGRATULATIONS !!! UNSUBSCRIBE UNSUBSCRIBE UNSUBSCRIBE !!! FREE MONEY !!! ACT NOW !!! LOREM IPSUM DOLOR SIT AMET CONSECTETUR ADIPISCING ELIT !!! ALEX02@EXAMPLE.COM R4X@K8P$33ND 202-555-0102 100-01-0002 198.51.100.2 102 EXAMPLE STREET, EXAMPLE CITY, FL 00002 25.762101,-80.192201 !!! SPECIAL OFFER !!! YOU ARE TODAY'S LUCKY VISITOR!!! @SARAHJ 7738291827 !!! BUY NOW !!! CLICK CLICK CLICK !!! NOTIFICATION NOTIFICATION NOTIFICATION !!! LOREM IPSUM LOREM IPSUM LOREM IPSUM !!! ALEX03@EXAMPLE.COM T9W#B6L!72QP 202-555-0103 100-01-0003 203.0.113.3 103 EXAMPLE STREET, EXAMPLE CITY, FL 00003 25.762522,-80.192614 !!! WIN A PRIZE !!! CLAIM YOUR REWARD NOW!!! 182736492817364 !!! @TEST_USER WARNING !!! ACCOUNT NOTIFICATION !!! FREE FREE FREE !!! ALEX04@EXAMPLE.COM Y2N$H5K@48VR 202-555-0104 100-01-0004 192.0.2.4 104 EXAMPLE STREET, EXAMPLE CITY, FL 00004 25.762943,-80.193027 !!! SPECIAL BONUS !!! CLICK IMMEDIATELY!!! LOREM IPSUM LOREM IPSUM LOREM IPSUM!!! @JOHNDOE123 728192837461928374 !!! CONGRATULATIONS!!! UNSUBSCRIBE HERE!!! ALEX05@EXAMPLE.COM M8P!C3D#67XS 202-555-0105 100-01-0005 198.51.100.5 105 EXAMPLE STREET, EXAMPLE CITY, FL 00005 25.763364,-80.193440 !!! FREE DELIVERY !!! LIMITED OFFER !!! HELLO HELLO HELLO !!! 8374619283746 !!! @RANDOMUSER ACCOUNT ALERT !!! CLICK NOW !!! SPAM SPAM SPAM !!! ALEX06@EXAMPLE.COM Q5V@R9N$21HT 202-555-0106 100-01-0006 203.0.113.6 106 EXAMPLE STREET, EXAMPLE CITY, FL 00006 25.763785,-80.193853 !!! CONGRATULATIONS !!! YOU WON !!! ACT FAST !!! @DEMOACCOUNT LOREM IPSUM DOLOR SIT AMET !!! 918273645918273 !!! SPECIAL ANNOUNCEMENT !!! FREE BONUS !!! ALEX07@EXAMPLE.COM B3K#X7W!54JM 202-555-0107 100-01-0007 192.0.2.7 107 EXAMPLE STREET, EXAMPLE CITY, FL 00007 25.764206,-80.194266 !!! CLICK HERE NOW !!! NOTIFICATION NOTIFICATION NOTIFICATION !!! 123123123123 !!! @SAMPLEUSER SAVE BIG !!! SAVE TODAY !!! SPAM MESSAGE SPAM MESSAGE SPAM MESSAGE !!! ALEX08@EXAMPLE.COM H6S$Z2F@83LP 202-555-0108 100-01-0008 198.51.100.8 108 EXAMPLE STREET, EXAMPLE CITY, FL 00008 25.764627,-80.194679 !!! WINNER !!! WINNER !!! WINNER !!! LOREM IPSUM 837462918374 !!! @FAKEPROFILE ACT NOW !!! FREE OFFER !!! ALEX09@EXAMPLE.COM N1Q!D8C#46TY 202-555-0109 100-01-0009 203.0.113.9 109 EXAMPLE STREET, EXAMPLE CITY, FL 00009 25.765048,-80.195092 !!! SYSTEM MESSAGE !!! CLICK CLICK CLICK !!! CONGRATULATIONS CUSTOMER !!! @ALPHA_TEST 82736491827364 !!! UNSUBSCRIBE UNSUBSCRIBE !!! SPECIAL PROMOTION !!! ALEX10@EXAMPLE.COM K7M@P4V$92RB 202-555-0110 100-01-0010 192.0.2.10 110 EXAMPLE STREET, EXAMPLE CITY, FL 00010 25.765469,-80.195505 !!! FREE GIFT !!! CLAIM NOW !!! LOREM IPSUM DOLOR SIT AMET !!! RANDOM RANDOM RANDOM !!! @BETA_ACCOUNT IMPORTANT !!! ACT FAST !!!"
 
-    #Phone number
-    phone_pattern = r'\b\d{3}-\d{3}-\d{4}\b'
-    phone_c = re.findall(phone_pattern, doc)
-    phone.extend(phone_c)
-    phone_c.clear()
-    phone_pattern = r'\(\b\d{3}\)-\d{3}-\d{4}\b' #Parenthesis
-    phone.extend(re.findall(phone_pattern, doc))
-    print(f'Phones found: {', ' .join(phone)}')
+response_obj = jsonify(data)
+doc = response_obj.get_data(as_text=True)
 
-    #Email
-    for word in words:
-        if '@' in word and '.' in word:
-            email.append(word)
-    print(f'Emails found: {', ' .join(email)}')
+words = doc.split()
+email = []
+streets = []
+username = []
+phone = []
 
-    #address
-    for word in words:
-        if word in {'ST','AVE','BLVD','RD','DR','LN','CT','CIR','PKWY','HWY','PL','TER','TRL','WAY','APT','STE','BLDG','FL','STREET','AVENUE','ROAD','BOULEVARD','DRIVE','LANE','COURT','CIRCLE','PARKWAY','HIGHWAY','PLACE','TERRACE','TRAIL','APARTMENT','SUITE','BUILDING','FLOOR','CITY','TOWN','VILLAGE','COUNTY','STATE','HEIGHTS','HILLS','JUNCTION','VALLEY','MANOR','MEADOW','PINES','GROVE','PARK','PLAZA','SQUARE','COVE','CROSSING','ESTATES','LANDING','POINT','RIDGE','VIEW','VISTA','GARDENS','SPRINGS','CREEK','LAKE','LAKES','BEACH','ISLAND','ISLANDS','MOUNT','MOUNTAIN','CANYON','BEND','LOOP','PASS','TRACE','TURN','RUN','WALK','CROSS','MALL','CENTER','COMMONS','VIA'}:
-            streets.append(word)
-    print(f'Streets Mentioned: {', '.join(streets)}')
+#Phone number
+phone_pattern = r'\b\d{3}-\d{3}-\d{4}\b'
+phone_c = re.findall(phone_pattern, doc)
+phone.extend(phone_c)
+phone_c.clear()
+phone_pattern = r'\(\b\d{3}\)-\d{3}-\d{4}\b' #Parenthesis
+phone.extend(re.findall(phone_pattern, doc))
+print(f'Phones found: {', ' .join(phone)}')
 
-    #Social Security number
-    ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
-    ssn = re.findall(ssn_pattern, doc)
-    print(f'Social Security numbers found: {', ' .join(ssn)}')
+#Email
+for word in words:
+    if '@' in word and '.' in word:
+        email.append(word)
+print(f'Emails found: {', ' .join(email)}')
 
-    #Ip Address
-    ip_pattern = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
-    ip = re.findall(ip_pattern, doc)
-    print(f'IP Addresses found: {', '.join(ip)}')
+#address
+for word in words:
+    if word in {'ST','AVE','BLVD','RD','DR','LN','CT','CIR','PKWY','HWY','PL','TER','TRL','WAY','APT','STE','BLDG','FL','STREET','AVENUE','ROAD','BOULEVARD','DRIVE','LANE','COURT','CIRCLE','PARKWAY','HIGHWAY','PLACE','TERRACE','TRAIL','APARTMENT','SUITE','BUILDING','FLOOR','CITY','TOWN','VILLAGE','COUNTY','STATE','HEIGHTS','HILLS','JUNCTION','VALLEY','MANOR','MEADOW','PINES','GROVE','PARK','PLAZA','SQUARE','COVE','CROSSING','ESTATES','LANDING','POINT','RIDGE','VIEW','VISTA','GARDENS','SPRINGS','CREEK','LAKE','LAKES','BEACH','ISLAND','ISLANDS','MOUNT','MOUNTAIN','CANYON','BEND','LOOP','PASS','TRACE','TURN','RUN','WALK','CROSS','MALL','CENTER','COMMONS','VIA'}:
+        streets.append(word)
+print(f'Streets Mentioned: {', '.join(streets)}')
 
-    #Username
-    for word in words:
-        if word.startswith('@'):
-            username.append(word)
-    print(f'Usernames: {', '.join(username)}')
+#Social Security number
+ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
+ssn = re.findall(ssn_pattern, doc)
+print(f'Social Security numbers found: {', ' .join(ssn)}')
+
+#Ip Address
+ip_pattern = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+ip = re.findall(ip_pattern, doc)
+print(f'IP Addresses found: {', '.join(ip)}')
+
+#Username
+for word in words:
+    if word.startswith('@'):
+        username.append(word)
+print(f'Usernames: {', '.join(username)}')
