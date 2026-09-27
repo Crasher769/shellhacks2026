@@ -15,7 +15,7 @@
  * not covered. DOM selectors below are integration assumptions: test them
  * against your ChatGPT page. This is not a network-level privacy boundary.
  */
-(() => {
+(function () {
   "use strict";
 
   // Avoid duplicate listeners if the same content script is injected twice.
@@ -34,16 +34,15 @@
     'button[aria-label="Send prompt"]',
     'button[aria-label="Send message"]'
   ].join(',');
-  const MAX_TEXT_LENGTH = 100_000;
-  const SCAN_TIMEOUT_MS = 12_000;
+  const MAX_TEXT_LENGTH = 100000;
+  const SCAN_TIMEOUT_MS = 12000;
 
   let session = null;
   let replay = null;
 
   function getEditor() {
     // Skip hidden copies of the composer, such as a previous page's editor.
-    return [...document.querySelectorAll(EDITOR_SELECTOR)].find(element =>
-      element.getClientRects().length > 0 &&
+    return [...document.querySelectorAll(EDITOR_SELECTOR)].find(element => element.getClientRects().length > 0 &&
       (element instanceof HTMLTextAreaElement || element.isContentEditable)
     ) || null;
   }
@@ -59,8 +58,8 @@
     const scope = editor.closest('form') || document;
     return [...scope.querySelectorAll(SEND_SELECTOR)]
       .find(function (button) {
-              return button.getClientRects().length;
-          }) || null;
+        return button.getClientRects().length;
+      }) || null;
   }
 
   function isCurrent(snapshot) {
@@ -116,12 +115,12 @@
     root.append(style, dialog);
     Object.assign(current, { host, dialog, title, description, details, status, actions });
     dialog.addEventListener('cancel', function (event) {
-            event.preventDefault();
-            closeSession(current);
-        });
+      event.preventDefault();
+      closeSession(current);
+    });
     action(current, 'Back to edit', function () {
-            return closeSession(current);
-        });
+      return closeSession(current);
+    });
     document.documentElement.append(host);
     dialog.showModal();
   }
@@ -134,8 +133,8 @@
     current.status.textContent = '';
     current.actions.replaceChildren();
     action(current, 'Back to edit', function () {
-            return closeSession(current);
-        }).focus();
+      return closeSession(current);
+    }).focus();
   }
 
   async function scanText(text) {
@@ -144,9 +143,9 @@
       const response = await Promise.race([
         chrome.runtime.sendMessage({ type: 'SCAN_PROMPT', text }),
         new Promise(function (_, reject) {
-            timer = setTimeout(function () {
-                return reject(new Error('Scanner timed out.'));
-            }, SCAN_TIMEOUT_MS);
+          timer = setTimeout(function () {
+            return reject(new Error('Scanner timed out.'));
+          }, SCAN_TIMEOUT_MS);
         })
       ]);
       if (response?.ok !== true) throw new Error('Scanner unavailable.');
@@ -159,17 +158,17 @@
   function validateResult(result, text) {
     const length = Array.from(text).length;
     if (!result || typeof result.sensitive !== 'boolean' ||
-        !Array.isArray(result.findings) || result.findings.length > 500 ||
-        typeof result.sanitizedText !== 'string' ||
-        result.sanitizedText.length > MAX_TEXT_LENGTH ||
-        result.sensitive !== (result.findings.length > 0)) {
+      !Array.isArray(result.findings) || result.findings.length > 500 ||
+      typeof result.sanitizedText !== 'string' ||
+      result.sanitizedText.length > MAX_TEXT_LENGTH ||
+      result.sensitive !== (result.findings.length > 0)) {
       throw new Error('Invalid scanner response.');
     }
     for (const finding of result.findings) {
       if (!finding || typeof finding.type !== 'string' || !finding.type ||
-          finding.type.length > 80 || !Number.isInteger(finding.start) ||
-          !Number.isInteger(finding.end) || finding.start < 0 ||
-          finding.end <= finding.start || finding.end > length) {
+        finding.type.length > 80 || !Number.isInteger(finding.start) ||
+        !Number.isInteger(finding.end) || finding.start < 0 ||
+        finding.end <= finding.start || finding.end > length) {
         throw new Error('Invalid scanner findings.');
       }
     }
@@ -223,21 +222,21 @@
     current.status.textContent = 'Copy this version, then paste it into the prompt box. It will be checked again when you send.';
     current.actions.replaceChildren();
     action(current, 'Back to edit', function () {
-            return closeSession(current);
-        });
+      return closeSession(current);
+    });
     action(current, 'Copy sanitized', async function () {
-            try {
-                await navigator.clipboard.writeText(result.sanitizedText);
-                if (session === current) current.status.textContent = 'Copied. Choose Back to edit, select your original draft, and paste.';
-            } catch {
-                preview.focus();
-                preview.select();
-                current.status.textContent = 'Automatic copy was unavailable. Copy the selected text manually.';
-            }
-        });
+      try {
+        await navigator.clipboard.writeText(result.sanitizedText);
+        if (session === current) current.status.textContent = 'Copied. Choose Back to edit, select your original draft, and paste.';
+      } catch {
+        preview.focus();
+        preview.select();
+        current.status.textContent = 'Automatic copy was unavailable. Copy the selected text manually.';
+      }
+    });
     action(current, 'Send original anyway', function () {
-            return sendReviewed(current);
-        });
+      return sendReviewed(current);
+    });
     current.actions.querySelector('button').focus();
   }
 
@@ -276,22 +275,22 @@
   // Delegated listeners survive editor replacement and single-page navigation.
   // Window capture runs before document and element listeners registered later.
   window.addEventListener('keydown', function (event) {
-          if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
-          const editor = getEditor();
-          if (editor && event.target instanceof Node && editor.contains(event.target)) {
-              intercept(event, editor);
-          }
-      }, true);
+    if (event.key !== 'Enter' || event.shiftKey || event.isComposing || event.keyCode === 229) return;
+    const editor = getEditor();
+    if (editor && event.target instanceof Node && editor.contains(event.target)) {
+      intercept(event, editor);
+    }
+  }, true);
 
   window.addEventListener('click', function (event) {
-          if (!(event.target instanceof Element)) return;
-          const button = event.target.closest(SEND_SELECTOR);
-          const editor = getEditor();
-          if (editor && button && button === getSendButton(editor)) intercept(event, editor);
-      }, true);
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest(SEND_SELECTOR);
+    const editor = getEditor();
+    if (editor && button && button === getSendButton(editor)) intercept(event, editor);
+  }, true);
 
   window.addEventListener('submit', function (event) {
-          const editor = getEditor();
-          if (editor && event.target === editor.closest('form')) intercept(event, editor);
-      }, true);
+    const editor = getEditor();
+    if (editor && event.target === editor.closest('form')) intercept(event, editor);
+  }, true);
 })();
