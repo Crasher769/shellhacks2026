@@ -35,7 +35,7 @@ p {
 
 ul {
   padding-left: 0;
-  list-style-position: inside;
+  list-style: none;
   overflow-wrap: anywhere;
 }
 
