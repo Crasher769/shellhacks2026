@@ -1,62 +1,100 @@
 import re
 from flask import Flask, jsonify, request
 
-app=Flask(__name__) #updated this to the top / Create the Flask app before declaring routes, this manages web server's routes. Fuck Flask 
+app = Flask(__name__)
 
-@app.route('/scan', methods=['POST']) 
-def scan(): # Handles POST requests to /scan, everything inside here runs when a POST request is made to /scan
-    data = request.get_json() #converts the json data to a python dictionary/equivalent to JS obj I think?
-    prompt = data["text"]  #assigns the text from the json to a variable
 
-    # put down the return at the bottom of this I believe // return jsonify({"message": "Data received successfully", "data": data})
+@app.route('/scan', methods=['POST'])
+def scan():
+    data = request.get_json()
+    if not isinstance(data, dict) or not isinstance(data.get("text"), str):
+        return jsonify({"error": "Provide a JSON object with a text string."}), 400
 
-response_obj = jsonify(data) 
-#scope error I think, data only exists in scan(). 
-#Also, everything below this runs APART from the scan(), so I think everything has to be indented inside scan() so it runs it each time a POST request is made,  
-#jsonify turns it into the final json response that is sent back to the frontend, so this should be at the bottom. '''
-doc = response_obj.get_data(as_text=True)
+    # Check the prompt itself. All results belong to this request only.
+    doc = data["text"]
+    words = doc.split()
+    email = []
+    streets = []
+    username = []
+    phone = []
 
-words = doc.split()
-email = []
-streets = []
-username = []
-phone = []
+    # Phone number
+    phone_pattern = r'\b\d{3}-\d{3}-\d{4}\b'
+    phone_c = re.findall(phone_pattern, doc)
+    phone.extend(phone_c)
+    phone_c.clear()
+    parenthesized_phone_pattern = r'\(\b\d{3}\)-\d{3}-\d{4}\b'
+    phone.extend(re.findall(parenthesized_phone_pattern, doc))
 
-#Phone number
-phone_pattern = r'\b\d{3}-\d{3}-\d{4}\b'
-phone_c = re.findall(phone_pattern, doc)
-phone.extend(phone_c)
-phone_c.clear()
-phone_pattern = r'\(\b\d{3}\)-\d{3}-\d{4}\b' #Parenthesis
-phone.extend(re.findall(phone_pattern, doc))
-print(f'Phones found: {', ' .join(phone)}')
+    # Email
+    for word in words:
+        if '@' in word and '.' in word:
+            email.append(word)
 
-#Email
-for word in words:
-    if '@' in word and '.' in word:
-        email.append(word)
-print(f'Emails found: {', ' .join(email)}')
+    # Address
+    for word in words:
+        if word in {'ST','AVE','BLVD','RD','DR','LN','CT','CIR','PKWY','HWY','PL','TER','TRL','WAY','APT','STE','BLDG','FL','STREET','AVENUE','ROAD','BOULEVARD','DRIVE','LANE','COURT','CIRCLE','PARKWAY','HIGHWAY','PLACE','TERRACE','TRAIL','APARTMENT','SUITE','BUILDING','FLOOR','CITY','TOWN','VILLAGE','COUNTY','STATE','HEIGHTS','HILLS','JUNCTION','VALLEY','MANOR','MEADOW','PINES','GROVE','PARK','PLAZA','SQUARE','COVE','CROSSING','ESTATES','LANDING','POINT','RIDGE','VIEW','VISTA','GARDENS','SPRINGS','CREEK','LAKE','LAKES','BEACH','ISLAND','ISLANDS','MOUNT','MOUNTAIN','CANYON','BEND','LOOP','PASS','TRACE','TURN','RUN','WALK','CROSS','MALL','CENTER','COMMONS','VIA'}:
+            streets.append(word)
 
-#address
-for word in words:
-    if word in {'ST','AVE','BLVD','RD','DR','LN','CT','CIR','PKWY','HWY','PL','TER','TRL','WAY','APT','STE','BLDG','FL','STREET','AVENUE','ROAD','BOULEVARD','DRIVE','LANE','COURT','CIRCLE','PARKWAY','HIGHWAY','PLACE','TERRACE','TRAIL','APARTMENT','SUITE','BUILDING','FLOOR','CITY','TOWN','VILLAGE','COUNTY','STATE','HEIGHTS','HILLS','JUNCTION','VALLEY','MANOR','MEADOW','PINES','GROVE','PARK','PLAZA','SQUARE','COVE','CROSSING','ESTATES','LANDING','POINT','RIDGE','VIEW','VISTA','GARDENS','SPRINGS','CREEK','LAKE','LAKES','BEACH','ISLAND','ISLANDS','MOUNT','MOUNTAIN','CANYON','BEND','LOOP','PASS','TRACE','TURN','RUN','WALK','CROSS','MALL','CENTER','COMMONS','VIA'}:
-        streets.append(word)
-print(f'Streets Mentioned: {', '.join(streets)}')
+    # Social Security number
+    ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
+    ssn = re.findall(ssn_pattern, doc)
 
-#Social Security number
-ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
-ssn = re.findall(ssn_pattern, doc)
-print(f'Social Security numbers found: {', ' .join(ssn)}')
+    # IP address
+    ip_pattern = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
+    ip = re.findall(ip_pattern, doc)
 
-#Ip Address
-ip_pattern = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
-ip = re.findall(ip_pattern, doc)
-print(f'IP Addresses found: {', '.join(ip)}')
+    # Username
+    for word in words:
+        if word.startswith('@'):
+            username.append(word)
 
-#Username
-for word in words:
-    if word.startswith('@'):
-        username.append(word)
-print(f'Usernames: {', '.join(username)}')
+    # Record original positions using the same regexes and detected whole words.
+    # Return only metadata; the frontend already has the original prompt.
+    findings = []
+    regex_checks = (   #dude plz check this, I don't know regex much
+        ("phone", phone_pattern, phone),
+        ("phone", parenthesized_phone_pattern, phone),
+        ("ssn", ssn_pattern, ssn),
+        ("ip", ip_pattern, ip),
+    )
+    for kind, pattern, detected in regex_checks:
+        if detected:
+            for match in re.finditer(pattern, doc):
+                findings.append({"type": kind, "start": match.start(), "end": match.end()})
 
-app.run(host="127.0.0.1", port=8000)
+    token_checks = (
+        ("email", set(email)),
+        ("street", set(streets)),
+        ("username", set(username)),
+    )
+    for match in re.finditer(r"\S+", doc):
+        for kind, detected in token_checks:
+            if match.group() in detected:
+                findings.append({"type": kind, "start": match.start(), "end": match.end()})
+    findings.sort(key=lambda finding: (finding["start"], finding["end"], finding["type"]))
+
+    # Combine overlaps (e.g. a token detected as both email and username).
+    spans = []
+    for finding in findings:
+        start, end = finding["start"], finding["end"]
+        if spans and start < spans[-1][1]:
+            spans[-1][1] = max(spans[-1][1], end)
+        else:
+            spans.append([start, end])
+
+    # Work backwards so replacements cannot shift the remaining positions.
+    sanitized_text = doc
+    for start, end in reversed(spans):
+        sanitized_text = sanitized_text[:start] + "[REDACTED]" + sanitized_text[end:]
+
+    response_obj = {
+        "sensitive": bool(findings),
+        "findings": findings,
+        "sanitizedText": sanitized_text,
+    }
+    return jsonify(response_obj)
+
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=8000)
