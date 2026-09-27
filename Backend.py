@@ -1,9 +1,19 @@
 import re
-from flask import Flask, jsonify, requests
+from flask import Flask, jsonify, request
 
+app=Flask(__name__) #updated this to the top / Create the Flask app before declaring routes, this manages web server's routes. Fuck Flask 
 
+@app.route('/scan', methods=['POST']) 
+def scan(): # Handles POST requests to /scan, everything inside here runs when a POST request is made to /scan
+    data = request.get_json() #converts the json data to a python dictionary/equivalent to JS obj I think?
+    prompt = data["text"]  #assigns the text from the json to a variable
 
-response_obj = jsonify(data)
+    # put down the return at the bottom of this I believe // return jsonify({"message": "Data received successfully", "data": data})
+
+response_obj = jsonify(data) 
+#scope error I think, data only exists in scan(). 
+#Also, everything below this runs APART from the scan(), so I think everything has to be indented inside scan() so it runs it each time a POST request is made,  
+#jsonify turns it into the final json response that is sent back to the frontend, so this should be at the bottom. '''
 doc = response_obj.get_data(as_text=True)
 
 words = doc.split()
@@ -49,5 +59,4 @@ for word in words:
         username.append(word)
 print(f'Usernames: {', '.join(username)}')
 
-app=Flask(__name__)
 app.run(host="127.0.0.1", port=8000)
