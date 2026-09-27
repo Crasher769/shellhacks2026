@@ -97,27 +97,10 @@
     const host = element('div');
     host.id = 'privacy-scanner-ui';
     const root = host.attachShadow({ mode: 'closed' });
-    const style = element('style', `
-      :host { all: initial; }
-      dialog { box-sizing: border-box; width: min(560px, 92vw); max-height: 85vh;
-        overflow: auto; color: #e5e7eb; background: #171923; border: 1px solid #555;
-        border-radius: 14px; padding: 24px; font: 15px/1.5 system-ui, sans-serif; }
-      dialog::backdrop { background: rgb(0 0 0 / 65%); }
-      h2 { margin: 0 0 12px; font-size: 22px; }
-      p { margin: 10px 0; }
-      ul { padding-left: 22px; overflow-wrap: anywhere; }
-      label { display: block; margin: 14px 0 6px; }
-      textarea { box-sizing: border-box; width: 100%; min-height: 150px; resize: vertical;
-        background: #242735; color: #fff; border: 1px solid #777; border-radius: 6px;
-        padding: 10px; font: inherit; }
-      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-      button { background: #30384d; color: #fff; border: 1px solid #6c7895;
-        border-radius: 6px; padding: 9px 12px; cursor: pointer; font: inherit; }
-      button:hover { background: #404d69; }
-      button:focus-visible, textarea:focus-visible { outline: 3px solid #b6c8ff; }
-      button:disabled { opacity: .55; cursor: wait; }
-      .status { color: #cbd5e1; }
-    `);
+    // Load the extension stylesheet inside the shadow root to keep it scoped.
+    const style = element('link');
+    style.rel = 'stylesheet';
+    style.href = chrome.runtime.getURL('style.css');
     const dialog = element('dialog');
     const title = element('h2', 'Checking your prompt…');
     title.id = 'scanner-title';
