@@ -3,6 +3,7 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
+#Modules included: Phone number, Email, Social Security Number, IP address, Username
 
 @app.route('/scan', methods=['POST'])
 def scan():
@@ -14,7 +15,6 @@ def scan():
     doc = data["text"]
     words = doc.split()
     email = []
-    streets = []
     username = []
     phone = []
 
@@ -31,12 +31,7 @@ def scan():
         if '@' in word and '.' in word:
             email.append(word)
 
-    # Address
-    for word in words:
-        if word in {'ST','AVE','BLVD','RD','DR','LN','CT','CIR','PKWY','HWY','PL','TER','TRL','WAY','APT','STE','BLDG','FL','STREET','AVENUE','ROAD','BOULEVARD','DRIVE','LANE','COURT','CIRCLE','PARKWAY','HIGHWAY','PLACE','TERRACE','TRAIL','APARTMENT','SUITE','BUILDING','FLOOR','CITY','TOWN','VILLAGE','COUNTY','STATE','HEIGHTS','HILLS','JUNCTION','VALLEY','MANOR','MEADOW','PINES','GROVE','PARK','PLAZA','SQUARE','COVE','CROSSING','ESTATES','LANDING','POINT','RIDGE','VIEW','VISTA','GARDENS','SPRINGS','CREEK','LAKE','LAKES','BEACH','ISLAND','ISLANDS','MOUNT','MOUNTAIN','CANYON','BEND','LOOP','PASS','TRACE','TURN','RUN','WALK','CROSS','MALL','CENTER','COMMONS','VIA'}:
-            streets.append(word)
-
-    # Social Security number
+    # Social Security Number (SSN)
     ssn_pattern = r'\b\d{3}-\d{2}-\d{4}\b'
     ssn = re.findall(ssn_pattern, doc)
 
@@ -65,7 +60,6 @@ def scan():
 
     token_checks = (
         ("email", set(email)),
-        ("street", set(streets)),
         ("username", set(username)),
     )
     for match in re.finditer(r"\S+", doc):
