@@ -99,7 +99,13 @@
     // Load the extension stylesheet inside the shadow root to keep it scoped.
     const style = element('link');
     style.rel = 'stylesheet';
-    style.href = chrome.runtime.getURL('style.css');
+    // Request a fresh copy when reopening the dialog during CSS development.
+    const styleURL = new URL(chrome.runtime.getURL('style.css'));
+    styleURL.searchParams.set('v', Date.now().toString());
+    style.href = styleURL.href;
+    style.addEventListener('error', () => {
+      console.error('Privacy Scanner: could not load the dialog stylesheet.', style.href);
+    }, { once: true });
     const dialog = element('dialog');
     const title = element('h2', 'Checking your prompt…');
     title.id = 'scanner-title';
