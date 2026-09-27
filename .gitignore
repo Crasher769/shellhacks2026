@@ -1,0 +1,5 @@
+.idea/
+.vscode/
+privacy_virtual.venv/
+__pycache__/
+*.pyc
