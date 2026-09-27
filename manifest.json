@@ -7,7 +7,11 @@
         "http://127.0.0.1/*"
     ],
     "action": {
-        "default_popup": "popup.html"
+        "default_popup": "popup.html",
+        "default_icon": "Senshawk.png"
+    },
+    "icons": {
+        "100": "Senshawk.png"
     },
     "background": {
         "service_worker": "background.js"
